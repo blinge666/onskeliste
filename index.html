@@ -476,32 +476,52 @@ async function slaOppISBN(isbn){
 }
 
 /* ---------- omslag ---------- */
+let googleSperret=0;
 async function findCover(b){
+  const forf=(b.forfatter||"").split(",")[0].trim();
+
   if(b.isbn){
     const ol="https://covers.openlibrary.org/b/isbn/"+encodeURIComponent(b.isbn)+"-M.jpg?default=false";
     if(await imgOk(ol)) return {url:ol,via:"Open Library"};
   }
-  const forf=(b.forfatter||"").split(",")[0].trim();
+
+  let nettfeil=false;
+  try{
+    const p=new URLSearchParams({title:b.tittel,limit:"5",fields:"title,author_name,cover_i"});
+    if(forf) p.set("author",forf);
+    const r=await fetch("https://openlibrary.org/search.json?"+p);
+    if(r.ok){
+      const j=await r.json();
+      for(const d of (j.docs||[])){
+        if(d.cover_i) return {url:"https://covers.openlibrary.org/b/id/"+d.cover_i+"-M.jpg",
+          via:"Open Library — "+(d.title||"")};
+      }
+    } else nettfeil=true;
+  }catch(err){ nettfeil=true; }
+
+  if(Date.now()<googleSperret)
+    return {feil:"Ingen omslag hos Open Library. Google er midlertidig struput — prøv igjen om noen minutter, eller ta bilde."};
+
   const forsok=[];
   if(b.isbn) forsok.push("isbn:"+b.isbn);
-  if(forf) forsok.push('intitle:"'+b.tittel+'" inauthor:"'+forf+'"');
-  if(forf) forsok.push(b.tittel+" "+forf);
-  forsok.push('intitle:"'+b.tittel+'"');
-  forsok.push(b.tittel);
-  let nettfeil=false;
+  else forsok.push(b.tittel+(forf?" "+forf:""));
   for(const q of forsok){
     try{
       const r=await fetch("https://www.googleapis.com/books/v1/volumes?maxResults=5&q="+encodeURIComponent(q));
-      if(!r.ok){ if(r.status===429) return {feil:"Google struper forespørslene. Vent litt og prøv igjen."};
-        nettfeil=true; continue; }
+      if(r.status===429||r.status===403){
+        googleSperret=Date.now()+10*60*1000;
+        return {feil:"Google struper forespørslene. Sperret i 10 minutter — ta bilde i mellomtiden."};
+      }
+      if(!r.ok){ nettfeil=true; continue; }
       const j=await r.json();
       for(const it of (j.items||[])){
         const t=it.volumeInfo&&it.volumeInfo.imageLinks&&it.volumeInfo.imageLinks.thumbnail;
-        if(t) return {url:t.replace(/^http:/,"https:"),via:it.volumeInfo.title||"Google Books"};
+        if(t) return {url:t.replace(/^http:/,"https:"),via:"Google Books — "+(it.volumeInfo.title||"")};
       }
-    }catch(e){ nettfeil=true; }
+    }catch(err){ nettfeil=true; }
   }
-  if(nettfeil) return {feil:"Får ikke kontakt med omslagstjenesten. Appen må kjøre fra en nettadresse, ikke fra en lokal fil."};
+
+  if(nettfeil) return {feil:"Får ikke kontakt med omslagstjenestene."};
   return {feil:"Ingen omslag funnet for denne tittelen."};
 }
 function imgOk(url){return new Promise(res=>{
