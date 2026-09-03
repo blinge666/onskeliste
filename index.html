@@ -314,9 +314,10 @@ function openDetail(id){
    ${b.status==="kjopt"?`<div class="banner ok">Kjøpt · ligger i arkivet</div>`:""}
    <div class="coveract">
      <button id="cfetch">Hent omslag</button>
-     <button id="cpick">Ta bilde</button>
+     <button id="curl">Lim inn bildeadresse</button>
+     <button id="cpick">Velg bilde</button>
      ${b.cover?`<button id="cclear">Fjern</button>`:""}
-     <input id="cfile" type="file" accept="image/*" capture="environment" class="hide">
+     <input id="cfile" type="file" accept="image/*" class="hide">
    </div>
    <div id="cmsg" style="padding:0 16px;font-size:13px;color:var(--ink-3)"></div>
    <div class="fields">
@@ -368,6 +369,18 @@ function openDetail(id){
     if(res.feil){cmsg(res.feil); return;}
     cmsg("Traff: "+res.via);
     setCover(res.url);
+  };
+  $("#curl").onclick=async()=>{
+    let v="";
+    try{ v=(await navigator.clipboard.readText()||"").trim(); }catch(err){}
+    v=prompt("Bildeadresse til omslaget", v)||"";
+    v=v.trim();
+    if(!v) return;
+    if(!/^https:\/\//i.test(v)){cmsg("Adressen må starte med https://"); return;}
+    cmsg("Sjekker bildet…");
+    if(!await imgOk(v)){cmsg("Fant ikke noe bilde på den adressen."); return;}
+    const lagret=await hentSomBilde(v);
+    setCover(lagret||v);
   };
   const pick=()=>$("#cfile").click();
   $("#cpick").onclick=pick;
@@ -460,7 +473,7 @@ async function slaOppISBN(isbn){
   if(dupe&&!confirm("«"+dupe.tittel+"» ligger allerede i lista. Legge til likevel?")) return;
   let p={isbn};
   try{
-    const r=await fetch("https://www.googleapis.com/books/v1/volumes?q=isbn:"+encodeURIComponent(isbn));
+    const r=await fetch(googleURL("isbn:"+isbn));
     const j=r.ok?await r.json():null;
     const v=j&&j.items&&j.items[0]&&j.items[0].volumeInfo;
     if(v){
@@ -476,7 +489,14 @@ async function slaOppISBN(isbn){
 }
 
 /* ---------- omslag ---------- */
+/* ---- SETT INN DIN GOOGLE BOOKS API-NØKKEL MELLOM ANFØRSELSTEGNENE ---- */
+const GOOGLE_KEY="";
+/* ---------------------------------------------------------------------- */
 let googleSperret=0;
+function googleURL(q){
+  return "https://www.googleapis.com/books/v1/volumes?maxResults=5&q="+encodeURIComponent(q)
+    +(GOOGLE_KEY?"&key="+encodeURIComponent(GOOGLE_KEY):"");
+}
 async function findCover(b){
   const forf=(b.forfatter||"").split(",")[0].trim();
 
@@ -500,17 +520,19 @@ async function findCover(b){
   }catch(err){ nettfeil=true; }
 
   if(Date.now()<googleSperret)
-    return {feil:"Ingen omslag hos Open Library. Google er midlertidig struput — prøv igjen om noen minutter, eller ta bilde."};
+    return {feil:"Ingen omslag hos Open Library, og Google er midlertidig sperret. Ta bilde i stedet."};
 
   const forsok=[];
   if(b.isbn) forsok.push("isbn:"+b.isbn);
   else forsok.push(b.tittel+(forf?" "+forf:""));
   for(const q of forsok){
     try{
-      const r=await fetch("https://www.googleapis.com/books/v1/volumes?maxResults=5&q="+encodeURIComponent(q));
+      const r=await fetch(googleURL(q));
       if(r.status===429||r.status===403){
         googleSperret=Date.now()+10*60*1000;
-        return {feil:"Google struper forespørslene. Sperret i 10 minutter — ta bilde i mellomtiden."};
+        return {feil:GOOGLE_KEY
+          ? "Google avviste nøkkelen, eller kvoten er brukt opp. Sjekk at nøkkelen er låst til blinge666.github.io/*"
+          : "Google struper forespørslene. Legg inn en API-nøkkel, eller ta bilde."};
       }
       if(!r.ok){ nettfeil=true; continue; }
       const j=await r.json();
@@ -527,6 +549,15 @@ async function findCover(b){
 function imgOk(url){return new Promise(res=>{
   const i=new Image(); i.onload=()=>res(i.naturalWidth>2); i.onerror=()=>res(false); i.src=url;
 });}
+async function hentSomBilde(url){
+  try{
+    const r=await fetch(url,{mode:"cors"});
+    if(!r.ok) return "";
+    const blob=await r.blob();
+    if(!/^image\//.test(blob.type)) return "";
+    return await shrink(blob);
+  }catch(e){ return ""; }
+}
 function shrink(file){return new Promise((res,rej)=>{
   const fr=new FileReader();
   fr.onload=()=>{const im=new Image();
