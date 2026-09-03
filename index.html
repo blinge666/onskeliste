@@ -1,0 +1,596 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#EFEBDF">
+<title>Ønskeliste bøker</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EFEBDF; --raised:#F7F4EC; --sunk:#E2DCCB;
+  --ink:#191712; --ink-2:#5C564A; --ink-3:#8E8676;
+  --rule:#CFC7B2; --rule-2:#A99F86;
+  --accent:#8A6A22; --accent-bg:#E6DCC0;
+  --jade:#1F5E52; --jade-bg:#D7E4DF;
+  --ox:#7A2F2F; --ox-bg:#EDDCD8;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  --deco:"Josefin Sans",-apple-system,sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;
+  padding-bottom:env(safe-area-inset-bottom)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{background:none;border:none;padding:0;cursor:pointer}
+.hide{display:none!important}
+.wrap{max-width:640px;margin:0 auto}
+
+header{position:sticky;top:0;z-index:20;background:var(--paper);
+  border-bottom:3px double var(--rule-2)}
+.hrow{display:flex;align-items:baseline;gap:10px;padding:16px 16px 8px}
+.hrow h1{font-family:var(--deco);font-weight:600;font-size:19px;margin:0;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ink)}
+.count{font-size:13px;color:var(--ink-3);margin-left:auto}
+.searchbar{padding:0 16px 10px}
+.searchbar input{width:100%;height:38px;padding:0 12px;background:var(--sunk);border:1px solid transparent;
+  border-radius:0;outline:none}
+.searchbar input:focus{border-color:var(--accent)}
+.chips{display:flex;gap:6px;padding:0 16px 10px;overflow-x:auto;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;font-family:var(--deco);font-size:13px;letter-spacing:.06em;padding:5px 13px;
+  border:1px solid var(--rule-2);color:var(--ink-2);white-space:nowrap;border-radius:0}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.chip b{font-weight:400;opacity:.6;margin-left:6px}
+.sortrow{display:flex;align-items:center;gap:8px;padding:0 16px 10px;font-size:13px;color:var(--ink-2)}
+.sortrow select{background:none;border:none;padding:2px 0;color:var(--ink-2);outline:none}
+
+.row{display:flex;gap:12px;padding:12px 16px;border-bottom:1px solid var(--rule);align-items:flex-start;
+  width:100%;text-align:left}
+.cover{width:36px;height:52px;flex:0 0 auto;background:var(--sunk);border-radius:0;
+  display:flex;align-items:center;justify-content:center;font-family:var(--deco);font-weight:600;
+  font-size:15px;letter-spacing:.05em;color:#EFEBDF}
+.meta{flex:1;min-width:0}
+.title{font-size:15px;line-height:1.3}
+.byline{font-size:13px;color:var(--ink-2);margin-top:3px}
+.foot{display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap}
+.tag{font-family:var(--deco);font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+  padding:2px 8px;background:var(--jade-bg);color:var(--jade)}
+.price{font-size:13px;color:var(--ink-2)}
+.soon{font-family:var(--deco);font-size:11px;letter-spacing:.06em;padding:2px 8px;
+  background:var(--accent-bg);color:var(--accent)}
+.tick{flex:0 0 auto;align-self:center;width:26px;height:26px;border:1.5px solid var(--rule-2);border-radius:0}
+.tick[data-on="1"]{background:var(--ink-3);border-color:var(--ink-3)}
+
+.done .title,.done .byline{color:var(--ink-3);text-decoration:line-through}
+.cover img{width:100%;height:100%;object-fit:cover;display:block}
+.done .cover{opacity:.3}
+.coveract{display:flex;gap:8px;padding:0 16px 4px;flex-wrap:wrap}
+.coveract button{font-family:var(--deco);font-size:12px;letter-spacing:.06em;padding:6px 12px;
+  border:1px solid var(--rule-2);color:var(--ink-2)}
+.archhead{display:flex;align-items:center;gap:9px;padding:14px 16px;background:var(--sunk);
+  border-top:3px double var(--rule-2);border-bottom:1px solid var(--rule);width:100%;
+  font-family:var(--deco);font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2)}
+.archhead .caret{transition:transform .15s}
+.archhead[aria-expanded="true"] .caret{transform:rotate(90deg)}
+
+.empty{padding:48px 24px;text-align:center;color:var(--ink-3)}
+.empty p{margin:0 0 4px}
+
+.bar{position:sticky;bottom:0;display:flex;gap:8px;padding:10px 16px calc(10px + env(safe-area-inset-bottom));
+  background:var(--paper);border-top:3px double var(--rule-2)}
+.btn{flex:1;height:42px;border:1px solid var(--rule-2);color:var(--ink);border-radius:0;
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  font-family:var(--deco);font-size:14px;letter-spacing:.08em}
+.btn.primary{background:var(--ink);border-color:var(--ink);color:var(--paper);flex:2}
+.btn.icon{flex:0 0 52px;letter-spacing:0}
+
+.sheet{position:fixed;inset:0;z-index:40;background:var(--paper);overflow-y:auto}
+.sheettop{position:sticky;top:0;background:var(--paper);border-bottom:1px solid var(--rule);
+  display:flex;align-items:center;gap:14px;padding:12px 16px}
+.sheettop button{font-family:var(--deco);font-size:13px;letter-spacing:.08em;color:var(--accent)}
+.sheettop .grow{flex:1}
+.hero{display:flex;gap:16px;padding:18px 16px;border-bottom:3px double var(--rule-2)}
+.hero .cover{width:84px;height:120px;font-size:30px}
+.hero h2{font-size:18px;font-weight:600;margin:0;line-height:1.3}
+.fields{padding:0 16px}
+.field{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid var(--rule);align-items:center}
+.field label{width:104px;flex:0 0 auto;font-size:13px;color:var(--ink-2)}
+.field input,.field select,.field textarea{flex:1;min-width:0;background:none;border:none;outline:none;
+  font-size:14px;padding:2px 0}
+.field input::placeholder,.field textarea::placeholder{color:var(--ink-3);font-style:italic}
+.field input:focus,.field textarea:focus,.field select:focus{border-bottom:1px solid var(--accent)}
+.field textarea{resize:vertical;min-height:52px;font-family:inherit}
+.seclabel{font-family:var(--deco);font-size:12px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--ink-3);padding:18px 16px 6px}
+.shops{display:flex;flex-wrap:wrap;gap:8px;padding:0 16px 16px}
+.shop{font-family:var(--deco);font-size:13px;letter-spacing:.05em;padding:8px 14px;
+  border:1px solid var(--rule-2);color:var(--ink-2);text-decoration:none;border-radius:0}
+.shop.lead{border-color:var(--accent);color:var(--accent);border-width:2px}
+.banner{display:flex;gap:9px;align-items:center;padding:11px 16px;font-size:13px}
+.banner.ok{background:var(--jade-bg);color:var(--jade)}
+.banner.warn{background:var(--accent-bg);color:var(--accent)}
+.tagpick{display:flex;flex-wrap:wrap;gap:6px;padding:4px 0 12px}
+.tagpick button{font-family:var(--deco);font-size:13px;letter-spacing:.06em;padding:5px 13px;
+  border:1px solid var(--rule-2);color:var(--ink-2);border-radius:0}
+.tagpick button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+
+.snack{position:fixed;left:16px;right:16px;bottom:calc(76px + env(safe-area-inset-bottom));z-index:60;
+  background:var(--ink);color:var(--paper);padding:12px 14px;display:flex;
+  align-items:center;gap:12px;font-size:14px;border-radius:0}
+.snack button{margin-left:auto;font-family:var(--deco);letter-spacing:.08em;color:var(--paper);
+  text-decoration:underline}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="hrow"><h1>Ønskeliste</h1><span class="count" id="count"></span></div>
+    <div class="searchbar"><input id="q" type="search" placeholder="Søk i tittel eller forfatter" autocomplete="off"></div>
+    <div class="chips" id="chips"></div>
+    <div class="sortrow">
+      <label for="sort">Sorter</label>
+      <select id="sort">
+        <option value="ny">Nyest lagt til</option>
+        <option value="tittel">Tittel</option>
+        <option value="forfatter">Forfatter</option>
+        <option value="prisopp">Pris, lavest først</option>
+        <option value="prisned">Pris, høyest først</option>
+        <option value="ar">Utgivelsesår</option>
+      </select>
+      <button id="io" style="margin-left:auto;color:var(--ink-3);font-size:13px">Sikkerhetskopi</button>
+    </div>
+  </header>
+
+  <main id="list"></main>
+
+  <div class="bar">
+    <button class="btn primary" id="add">Legg til bok</button>
+    <button class="btn icon" id="scan" aria-label="Skann strekkode">◫</button>
+  </div>
+</div>
+
+<div class="sheet hide" id="sheet"></div>
+<div id="snackhost"></div>
+
+<script id="seed" type="application/json">[{"id": "b1", "tittel": "Tid for historie", "forfatter": "Erling Sandmo", "pris": 499, "format": "Heftet", "sprak": "Norsk (bokmål)", "ar": 2014, "tagg": "historie", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b2", "tittel": "Frå høvdingdøme til statsmakt i Noreg; ca. 200-1350", "forfatter": "Knut Dørum, Eirin Holberg", "pris": 629, "format": "Heftet", "sprak": "Norsk (nynorsk)", "ar": 2017, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b3", "tittel": "William Blake and The Sea Monsters of Love", "forfatter": "Philip Hoare", "pris": 181, "format": "Heftet", "sprak": "Engelsk", "ar": 2026, "tagg": "annet", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b4", "tittel": "The Hermetic Order of the Golden Dawn", "forfatter": "Felix John Taylor", "pris": 350, "format": "Innbundet", "sprak": "Engelsk", "ar": 2026, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b5", "tittel": "Ind i musikken", "forfatter": "Peter Bastian", "pris": 313, "format": "Innbundet", "sprak": "Dansk", "ar": 2013, "tagg": "musikk", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b6", "tittel": "Llewellyn's Complete Book of Ceremonial Magick", "forfatter": "", "pris": 415, "format": "Heftet", "sprak": "Engelsk", "ar": 2020, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b7", "tittel": "Aleister Crowley's Mysticism", "forfatter": "Marco Visconti", "pris": 268, "format": "Innbundet", "sprak": "Engelsk", "ar": 2025, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b8", "tittel": "Quantum Mechanics and Avant-Garde Music", "forfatter": "Rakhat-Bi Abdyssagin", "pris": 267, "format": "Heftet", "sprak": "Engelsk", "ar": 2024, "tagg": "musikk", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b9", "tittel": "Et kongerike foran undergangen", "forfatter": "Mona Renate Ringvej", "pris": 449, "format": "Innbundet", "sprak": "Norsk (bokmål)", "ar": 2025, "tagg": "historie", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b10", "tittel": "Magia Divina", "forfatter": "Duke Charles of Sweden, Tommy Westlund", "pris": 483, "format": "Innbundet", "sprak": "Engelsk", "ar": 2025, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b11", "tittel": "Myten om den gode kongen", "forfatter": "Hans Jacob Orning", "pris": 346, "format": "Innbundet", "sprak": "Norsk (bokmål)", "ar": 2025, "tagg": "historie", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b12", "tittel": "This Is Chaos: Embracing the Future of Magic", "forfatter": "Ronald Hutton (omslag: Peter J. Carroll)", "pris": 268, "format": "Pocket", "sprak": "Engelsk", "ar": 2025, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b13", "tittel": "Det gamle Oslo", "forfatter": "", "pris": 585, "format": "Innbundet", "sprak": "Norsk (bokmål)", "ar": 2024, "tagg": "historie", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b14", "tittel": "Performing Magic in the Pre-Modern North", "forfatter": "", "pris": 1676, "format": "Innbundet", "sprak": "Engelsk", "ar": 2024, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b15", "tittel": "The Lady and the Beast", "forfatter": "Deja Whitehouse", "pris": 802, "format": "Innbundet", "sprak": "Engelsk", "ar": 2025, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b16", "tittel": "Handbok i lokalhistorie", "forfatter": "Aud Mikkelsen Tretvik", "pris": 371, "format": "Heftet", "sprak": "Norsk (nynorsk)", "ar": 2025, "tagg": "historie", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b17", "tittel": "Compendium of the Occult", "forfatter": "Liz Williams", "pris": 241, "format": "Innbundet", "sprak": "Engelsk", "ar": 2025, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b18", "tittel": "The Magical Diaries of Leah Hirsig, 1923-1925", "forfatter": "", "pris": 1166, "format": "Innbundet", "sprak": "Engelsk", "ar": 2025, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b19", "tittel": "Grammar of Angels", "forfatter": "Edward Wilson-Lee", "pris": 330, "format": "Innbundet", "sprak": "Engelsk", "ar": 2025, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b20", "tittel": "Dumhet, idioti og dumme idioter", "forfatter": "Lars Fr.H. Svendsen", "pris": 346, "format": "Innbundet", "sprak": "Norsk (bokmål)", "ar": 2024, "tagg": "annet", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b21", "tittel": "Medicine Magic and Art in Early Modern Norway", "forfatter": "Ane Ohrvik", "pris": 1455, "format": "Heftet", "sprak": "Engelsk", "ar": 2020, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b22", "tittel": "The Nesting", "forfatter": "C.J. Cooke", "pris": 144, "format": "Heftet", "sprak": "Engelsk", "ar": 2021, "tagg": "fantasy/sf", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b23", "tittel": "En kort introduksjon til Danmark-Norge som kolonimakt", "forfatter": "Finn-Einar Eliassen", "pris": 349, "format": "Heftet", "sprak": "Norsk (bokmål)", "ar": 2024, "tagg": "historie", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b24", "tittel": "Beyond Weird", "forfatter": "Philip Ball", "pris": 188, "format": "Heftet", "sprak": "Engelsk", "ar": 2021, "tagg": "annet", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b25", "tittel": "Captain Sir Richard Francis Burton", "forfatter": "Edward Rice", "pris": 270, "format": "Pocket", "sprak": "Engelsk", "ar": 2001, "tagg": "historie", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b26", "tittel": "Magus: The Art of Magic from Faustus to Agrippa", "forfatter": "Anthony Grafton", "pris": 392, "format": "Innbundet", "sprak": "Engelsk", "ar": 2023, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b27", "tittel": "Friendship in Doubt", "forfatter": "Richard Kaczynski", "pris": 1112, "format": "Innbundet", "sprak": "Engelsk", "ar": 2024, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b28", "tittel": "Theurgy: Theory and Practice", "forfatter": "P. D. Newman", "pris": 331, "format": "Innbundet", "sprak": "Engelsk", "ar": 2024, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b29", "tittel": "Ars Notoria: The Notory Art of Solomon", "forfatter": "", "pris": 2122, "format": "Innbundet", "sprak": "Engelsk", "ar": 2024, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b30", "tittel": "Art of the Grimoire", "forfatter": "Owen Davies", "pris": 295, "format": "Tekstilinnbinding", "sprak": "Engelsk", "ar": 2023, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b31", "tittel": "Lion of Light", "forfatter": "Robert Anton Wilson", "pris": 222, "format": "Heftet", "sprak": "Engelsk", "ar": 2023, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b32", "tittel": "Luban", "forfatter": "Jason E. Read", "pris": 648, "format": "Innbundet", "sprak": "Engelsk", "ar": 2023, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b33", "tittel": "Gastro Obscura", "forfatter": "Atlas Obscura, Cecily Wong, Dylan Thuras", "pris": 396, "format": "Innbundet", "sprak": "Engelsk", "ar": 2021, "tagg": "annet", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b34", "tittel": "Det eldste Christiania", "forfatter": "Svein Solhjell", "pris": 364, "format": "Innbundet", "sprak": "Norsk (bokmål)", "ar": 2023, "tagg": "historie", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b35", "tittel": "The Music of the Lord of the Rings Films", "forfatter": "Doug Adams", "pris": 849, "format": "Heftet", "sprak": "Engelsk", "ar": 2011, "tagg": "musikk", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b36", "tittel": "En kort introduksjon til Norge i høymiddelalderen", "forfatter": "Hans Jacob Orning", "pris": 325, "format": "Heftet", "sprak": "Norsk (bokmål)", "ar": 2020, "tagg": "historie", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b37", "tittel": "En kort introduksjon til husmannsvesenet", "forfatter": "Nils Olav Østrem", "pris": 349, "format": "Heftet", "sprak": "Norsk (nynorsk)", "ar": 2022, "tagg": "historie", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b38", "tittel": "Globalhistoriografi", "forfatter": "Leidulf Melve", "pris": 371, "format": "Innbundet", "sprak": "Norsk (nynorsk)", "ar": 2015, "tagg": "historie", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b39", "tittel": "The Aleister Crowley Manual", "forfatter": "Marco Visconti", "pris": 268, "format": "Innbundet", "sprak": "Engelsk", "ar": 2023, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b40", "tittel": "Land og folk i den norrøne verda ca. 900 til 1450", "forfatter": "Steinar Imsen", "pris": 319, "format": "Heftet", "sprak": "Norsk (nynorsk)", "ar": 2015, "tagg": "historie", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b41", "tittel": "Norsk utvandringshistorie", "forfatter": "Nils Olav Østrem", "pris": 319, "format": "Heftet", "sprak": "Norsk (nynorsk)", "ar": 2014, "tagg": "historie", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b42", "tittel": "Occult", "forfatter": "Victoria Jenkins", "pris": 296, "format": "Tekstilinnbinding", "sprak": "Engelsk", "ar": 2022, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b43", "tittel": "The Occult Imagination in Britain, 1875-1947", "forfatter": "", "pris": 527, "format": "Heftet", "sprak": "Engelsk", "ar": 2019, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b44", "tittel": "Toil and Trouble", "forfatter": "Lisa Kröger, Melanie R. Anderson", "pris": 175, "format": "Innbundet", "sprak": "Engelsk", "ar": 2022, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b45", "tittel": "Source Magic", "forfatter": "Carl Abrahamsson, Nicholaj de Mattos Frisvold", "pris": 235, "format": "Pocket", "sprak": "Engelsk", "ar": 2023, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b46", "tittel": "Slaveporten", "forfatter": "David Diop", "pris": 391, "format": "Innbundet", "sprak": "Norsk (bokmål)", "ar": 2022, "tagg": "historie", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b47", "tittel": "India and the Occult", "forfatter": "G. Djurdjevic", "pris": 1455, "format": "Heftet", "sprak": "Engelsk", "ar": 2014, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b48", "tittel": "Living in the Sunlight", "forfatter": "Steve King", "pris": 138, "format": "Pocket", "sprak": "Engelsk", "ar": 2022, "tagg": "annet", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b49", "tittel": "Kornboka", "forfatter": "Åsmund Bjørnstad", "pris": 409, "format": "Innbundet", "sprak": "Norsk (nynorsk)", "ar": 2021, "tagg": "historie", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b50", "tittel": "Fredsårene", "forfatter": "", "pris": 364, "format": "Innbundet", "sprak": "Norsk (bokmål)", "ar": 2022, "tagg": "historie", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b51", "tittel": "Dagbok öfver mina vandringar på Wermlands och Solørs finnskogar 1821", "forfatter": "Carl Axel Gottlund, Anna Ø. Forsberg, Niclas Persson Tenhuinen", "pris": 380, "format": "Innbundet", "sprak": "Svensk", "ar": 2021, "tagg": "historie", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b52", "tittel": "Lightbringers of the North", "forfatter": "Perttu Häkkinen, Vesa Iitti", "pris": 375, "format": "Pocket", "sprak": "Engelsk", "ar": 2022, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b53", "tittel": "City of the Beast", "forfatter": "Phil Baker, Timothy D'arch Smith", "pris": 252, "format": "Heftet", "sprak": "Engelsk", "ar": 2021, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b54", "tittel": "The Magic of Rogues", "forfatter": "Frank Klaassen, Sharon Hubbs Wright", "pris": 224, "format": "Pocket", "sprak": "Engelsk", "ar": 2021, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b55", "tittel": "Elucidation of Necromancy", "forfatter": "", "pris": 502, "format": "Innbundet", "sprak": "Engelsk", "ar": 2022, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b56", "tittel": "Department of Truth, Volume 2: The City Upon a Hill", "forfatter": "James Tynion IV", "pris": 206, "format": "Heftet", "sprak": "Engelsk", "ar": 2021, "tagg": "tegneserier", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b57", "tittel": "Three Books of Occult Philosophy", "forfatter": "Heinrich Cornelius Agrippa", "pris": 2122, "format": "Innbundet", "sprak": "Engelsk", "ar": 2021, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b58", "tittel": "Lights, Camera, Witchcraft", "forfatter": "Heather Greene", "pris": 289, "format": "Heftet", "sprak": "Engelsk", "ar": 2021, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b59", "tittel": "Myten om murbyen; Christiania 1624-1814", "forfatter": "Lars Roede", "pris": 409, "format": "Innbundet", "sprak": "Norsk (bokmål)", "ar": 2021, "tagg": "historie", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b60", "tittel": "Handmade Electronic Music", "forfatter": "Nicolas Collins", "pris": 472, "format": "Heftet", "sprak": "Engelsk", "ar": 2020, "tagg": "musikk", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b61", "tittel": "At the Mountains of Madness", "forfatter": "H.P. Lovecraft, François Baranger", "pris": 350, "format": "Innbundet", "sprak": "Engelsk", "ar": 2021, "tagg": "fantasy/sf", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b62", "tittel": "The Call of Cthulhu", "forfatter": "H P Lovecraft", "pris": 130, "format": "Pocket", "sprak": "Engelsk", "ar": 2014, "tagg": "fantasy/sf", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b63", "tittel": "Egyptian Magick", "forfatter": "Mogg Morgan", "pris": 269, "format": "Heftet", "sprak": "Engelsk", "ar": 2020, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b64", "tittel": "Landet mot nord; 1000 år", "forfatter": "Mona Ringvej", "pris": 409, "format": "Innbundet", "sprak": "Norsk (bokmål)", "ar": 2020, "tagg": "historie", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b65", "tittel": "Historikerens arbeidsmåter", "forfatter": "", "pris": 520, "format": "Heftet", "sprak": "Norsk (bokmål)", "ar": 2018, "tagg": "historie", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b66", "tittel": "Clanlands", "forfatter": "Sam Heughan, Graham McTavish, Diana Gabaldon", "pris": 236, "format": "Innbundet", "sprak": "Engelsk", "ar": 2020, "tagg": "annet", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b67", "tittel": "Dadgad Guitar - Celtic Flatpicking", "forfatter": "Brent C Robitaille", "pris": 174, "format": "Pocket", "sprak": "Engelsk", "ar": 2018, "tagg": "musikk", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b68", "tittel": "Christmas for DADGAD Guitar", "forfatter": "Case Studio Productions", "pris": 90, "format": "Heftet", "sprak": "Engelsk", "ar": 2014, "tagg": "musikk", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b69", "tittel": "The Irish DADGAD Guitar Book", "forfatter": "Sarah McQuaid", "pris": 283, "format": "Heftet", "sprak": "Engelsk", "ar": 2005, "tagg": "musikk", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b70", "tittel": "Mikrohistorie", "forfatter": "", "pris": 390, "format": "Heftet", "sprak": "Norsk (bokmål)", "ar": 2020, "tagg": "historie", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b71", "tittel": "Norsk Referansegrammatikk", "forfatter": "", "pris": 557, "format": "Innbundet", "sprak": "Norsk", "ar": 1997, "tagg": "språk", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b72", "tittel": "Of Memphis and of Misraim; the Oriental Silence of the Winged Egyptian Rites of Freemasonry", "forfatter": "Milko Bogard", "pris": 366, "format": "Heftet", "sprak": "Engelsk", "ar": 2018, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b73", "tittel": "Masala", "forfatter": "Mallika Basu", "pris": 306, "format": "Innbundet", "sprak": "Engelsk", "ar": 2018, "tagg": "annet", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b74", "tittel": "Moderne dansk møbeldesign", "forfatter": "Per H. Hansen, Klaus Petersen", "pris": 442, "format": "Innbundet", "sprak": "Dansk", "ar": 2015, "tagg": "annet", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b75", "tittel": "Hine's Varieties", "forfatter": "Phil Hine, David Southwell", "pris": 198, "format": "Heftet", "sprak": "Engelsk", "ar": 2019, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b76", "tittel": "For the Health of the Enslaved", "forfatter": "Niklas Thode Jensen", "pris": 412, "format": "Heftet", "sprak": "Engelsk", "ar": 2012, "tagg": "historie", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b77", "tittel": "Runaway Virgins: Danish West Indian Slave Ads 1770-1848", "forfatter": "Enrique Corneiro", "pris": 197, "format": "Heftet", "sprak": "Engelsk", "ar": 2019, "tagg": "historie", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b78", "tittel": "The Great Sea: A Human History of the Mediterranean", "forfatter": "David Abulafia", "pris": 284, "format": "Heftet", "sprak": "Engelsk", "ar": 2013, "tagg": "historie", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b79", "tittel": "Fattigmenn, tilslørte bondepiker og rike riddere", "forfatter": "Annechen Bahr Bugge", "pris": 849, "format": "Fleksibind", "sprak": "Norsk (bokmål)", "ar": 2019, "tagg": "historie", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b80", "tittel": "Death by Black Hole", "forfatter": "Neil deGrasse Tyson", "pris": 150, "format": "Heftet", "sprak": "Engelsk", "ar": 2014, "tagg": "annet", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b81", "tittel": "Superstudent; lær mer effektivt, få bedre karakterer", "forfatter": "Olav Schewe", "pris": 279, "format": "Heftet", "sprak": "Norsk (bokmål)", "ar": 2018, "tagg": "annet", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b82", "tittel": "The Incal", "forfatter": "Alejandro Jodorowsky", "pris": 516, "format": "Innbundet", "sprak": "Engelsk", "ar": 2014, "tagg": "tegneserier", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b83", "tittel": "The Magic Order Volume 1", "forfatter": "Mark Millar", "pris": 243, "format": "Heftet", "sprak": "Engelsk", "ar": 2019, "tagg": "tegneserier", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b84", "tittel": "Beyond the North Wind", "forfatter": "Christopher McIntosh, Hilmar Örn Hilmarsson", "pris": 219, "format": "Heftet", "sprak": "Engelsk", "ar": 2019, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b85", "tittel": "Book of the New Sun: Volume 2", "forfatter": "Gene Wolfe", "pris": 183, "format": "Pocket", "sprak": "Engelsk", "ar": 2016, "tagg": "fantasy/sf", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b86", "tittel": "One Truth and One Spirit", "forfatter": "Keith Readdy, Vere Chappell", "pris": 429, "format": "Innbundet", "sprak": "Engelsk", "ar": 2019, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b87", "tittel": "Kampen Om de Danske Slaver: Aktuelle Perspektiver Pa Kolonihistorien", "forfatter": "", "pris": 324, "format": "Heftet", "sprak": "Dansk", "ar": 2017, "tagg": "historie", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b88", "tittel": "El Borak and Other Desert Adventures", "forfatter": "Robert E. Howard", "pris": 219, "format": "Pocket", "sprak": "Engelsk", "ar": 2010, "tagg": "fantasy/sf", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b89", "tittel": "The Horror Stories of Robert E. Howard", "forfatter": "Robert E. Howard", "pris": 230, "format": "Pocket", "sprak": "Engelsk", "ar": 2008, "tagg": "fantasy/sf", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b90", "tittel": "The Best of Robert E. Howard Volume 2", "forfatter": "Robert E. Howard", "pris": 230, "format": "Pocket", "sprak": "Engelsk", "ar": 2007, "tagg": "fantasy/sf", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b91", "tittel": "Sword Woman and Other Historical Adventures", "forfatter": "Robert E. Howard", "pris": 219, "format": "Pocket", "sprak": "Engelsk", "ar": 2011, "tagg": "fantasy/sf", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b92", "tittel": "The Conquering Sword of Conan", "forfatter": "Robert E. Howard", "pris": 178, "format": "Heftet", "sprak": "Engelsk", "ar": 2005, "tagg": "fantasy/sf", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b93", "tittel": "The Bloody Crown of Conan", "forfatter": "Robert E. Howard", "pris": 178, "format": "Heftet", "sprak": "Engelsk", "ar": 2004, "tagg": "fantasy/sf", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b94", "tittel": "The Coming of Conan the Cimmerian: Book One", "forfatter": "Robert E. Howard", "pris": 183, "format": "Heftet", "sprak": "Engelsk", "ar": 2003, "tagg": "fantasy/sf", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b95", "tittel": "The Savage Tales of Solomon Kane", "forfatter": "Robert E. Howard", "pris": 208, "format": "Pocket", "sprak": "Engelsk", "ar": 2004, "tagg": "fantasy/sf", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b96", "tittel": "Bran Mak Morn: The Last King", "forfatter": "Robert E. Howard", "pris": 178, "format": "Pocket", "sprak": "Engelsk", "ar": 2005, "tagg": "fantasy/sf", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b97", "tittel": "Zohar Complete Set", "forfatter": "", "pris": 8363, "format": "Øvrig", "sprak": "Engelsk", "ar": 2018, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b98", "tittel": "Innføring i norrønt språk", "forfatter": "Terje Spurkland", "pris": 278, "format": "Heftet", "sprak": "Norsk (bokmål)", "ar": 1989, "tagg": "språk", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b99", "tittel": "Når landet mørknar", "forfatter": "Tore Kvæven", "pris": 234, "format": "Pocket", "sprak": "Norsk (nynorsk)", "ar": 2019, "tagg": "annet", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b100", "tittel": "Hard er mitt lands lov", "forfatter": "Tore Kvæven", "pris": 234, "format": "Pocket", "sprak": "Norsk (nynorsk)", "ar": 2018, "tagg": "annet", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b101", "tittel": "The Stranger in the Woods", "forfatter": "Michael Finkel", "pris": 172, "format": "Heftet", "sprak": "Engelsk", "ar": 2018, "tagg": "annet", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b102", "tittel": "Norrøn ordbok", "forfatter": "Leiv Heggstad, Finn Hødnebø, Erik Simensen", "pris": 699, "format": "Innbundet", "sprak": "Norsk (nynorsk)", "ar": 2008, "tagg": "språk", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b103", "tittel": "Norrøn grammatikk i hovuddrag", "forfatter": "Odd Einar Haugen", "pris": 382, "format": "Innbundet", "sprak": "Norsk (nynorsk)", "ar": 2015, "tagg": "språk", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b104", "tittel": "Hellboy Omnibus Volume 4: Hellboy In Hell", "forfatter": "Mike Mignola", "pris": 260, "format": "Heftet", "sprak": "Engelsk", "ar": 2018, "tagg": "tegneserier", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b105", "tittel": "Høvding, jarl og konge", "forfatter": "Håvard Dahl Bratrein", "pris": 364, "format": "Innbundet", "sprak": "Norsk (bokmål)", "ar": 2018, "tagg": "historie", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b106", "tittel": "The League of Extraordinary Gentlemen (Vol III): Century", "forfatter": "Alan Moore", "pris": 268, "format": "Pocket", "sprak": "Engelsk", "ar": 2018, "tagg": "tegneserier", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b107", "tittel": "The League of Extraordinary Gentlemen: Nemo Trilogy", "forfatter": "Alan Moore, Kevin O'Neill", "pris": 576, "format": "Innbundet", "sprak": "Engelsk", "ar": 2015, "tagg": "tegneserier", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b108", "tittel": "The League of Extraordinary Gentlemen Omnibus", "forfatter": "Alan Moore", "pris": 415, "format": "Pocket", "sprak": "Engelsk", "ar": 2013, "tagg": "tegneserier", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b109", "tittel": "The Book of Oberon", "forfatter": "Daniel Harms, James R. Clark", "pris": 813, "format": "Innbundet", "sprak": "Engelsk", "ar": 2015, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b110", "tittel": "Den vennlige vikingen", "forfatter": "Jón Viðar Sigurðsson", "pris": 318, "format": "Innbundet", "sprak": "Norsk (bokmål)", "ar": 2010, "tagg": "historie", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b111", "tittel": "Aleister Crowley and the Temptation of Politics", "forfatter": "Marco Pasi", "pris": 600, "format": "Heftet", "sprak": "Engelsk", "ar": 2013, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b112", "tittel": "The War of Art", "forfatter": "Steven Pressfield", "pris": 188, "format": "Heftet", "sprak": "Engelsk", "ar": 2012, "tagg": "annet", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b113", "tittel": "Memo: Lær spansk", "forfatter": "Oddbjørn By", "pris": 260, "format": "Heftet", "sprak": "Norsk (bokmål)", "ar": 2013, "tagg": "språk", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b114", "tittel": "En kort historie om alle som noen gang har levd", "forfatter": "Adam Rutherford", "pris": 364, "format": "Innbundet", "sprak": "Norsk (bokmål)", "ar": 2018, "tagg": "annet", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b115", "tittel": "John Dee and the Empire of Angels", "forfatter": "Jason Louv", "pris": 331, "format": "Innbundet", "sprak": "Engelsk", "ar": 2018, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b116", "tittel": "2312", "forfatter": "Kim Stanley Robinson", "pris": 140, "format": "Pocket", "sprak": "Engelsk", "ar": 2013, "tagg": "fantasy/sf", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b117", "tittel": "Tantric Kali", "forfatter": "Daniel Odier", "pris": 144, "format": "Pocket", "sprak": "Engelsk", "ar": 2016, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b118", "tittel": "Opptøyer i Norge 1750-1850", "forfatter": "", "pris": 399, "format": "Heftet", "sprak": "Norsk (bokmål)", "ar": 2012, "tagg": "historie", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b119", "tittel": "Kvinner i vikingtid = Vikingatidens kvinnor", "forfatter": "", "pris": 409, "format": "Heftet", "sprak": "Norsk (bokmål)", "ar": 2014, "tagg": "historie", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b120", "tittel": "Dronningen", "forfatter": "", "pris": 418, "format": "Heftet", "sprak": "Norsk (bokmål)", "ar": 2017, "tagg": "historie", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b121", "tittel": "Dragon Bones", "forfatter": "Jan Fries", "pris": 838, "format": "Innbundet", "sprak": "Engelsk", "ar": 2013, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b122", "tittel": "Nightshades", "forfatter": "Jan Fries", "pris": 396, "format": "Innbundet", "sprak": "Engelsk", "ar": 2012, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b123", "tittel": "The Seven Names of Lamastu", "forfatter": "Jan Fries", "pris": 711, "format": "Innbundet", "sprak": "Engelsk", "ar": 2017, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b124", "tittel": "How to Pass Exams", "forfatter": "Dominic O'Brien", "pris": 181, "format": "Heftet", "sprak": "Engelsk", "ar": 2000, "tagg": "annet", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b125", "tittel": "Minner som prosesser", "forfatter": "Ingar Kaldal", "pris": 445, "format": "Heftet", "sprak": "Norsk (bokmål)", "ar": 2016, "tagg": "historie", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b126", "tittel": "The Magical Adventures of Mary Parish", "forfatter": "Frances Timbers", "pris": 426, "format": "Innbundet", "sprak": "Engelsk", "ar": 2016, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b127", "tittel": "Til skræk og exempel", "forfatter": "Terje Sødal", "pris": 509, "format": "Innbundet", "sprak": "Norsk (bokmål)", "ar": 2008, "tagg": "historie", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b128", "tittel": "Fortida er ikke hva den en gang var", "forfatter": "Knut Kjeldstadli", "pris": 499, "format": "Heftet", "sprak": "Norsk (bokmål)", "ar": 1999, "tagg": "historie", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b129", "tittel": "Fra avlatshandel til folkekirke", "forfatter": "", "pris": 418, "format": "Heftet", "sprak": "Norsk (bokmål)", "ar": 2017, "tagg": "historie", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b130", "tittel": "Orientalism", "forfatter": "Edward W. Said", "pris": 164, "format": "Pocket", "sprak": "Engelsk", "ar": 2003, "tagg": "historie", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b131", "tittel": "Goetic Liturgy", "forfatter": "Jake Stratton-Kent", "pris": 142, "format": "Heftet", "sprak": "Engelsk", "ar": 2015, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b132", "tittel": "Carbide Tipped Pens", "forfatter": "Ben Bova", "pris": 201, "format": "Heftet", "sprak": "Engelsk", "ar": 2016, "tagg": "fantasy/sf", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b133", "tittel": "The Rosicrucian Trilogy", "forfatter": "", "pris": 231, "format": "Heftet", "sprak": "Engelsk", "ar": 2016, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b134", "tittel": "Sensuren i Danmark-Norge", "forfatter": "Øystein Rian", "pris": 715, "format": "Innbundet", "sprak": "Norsk (bokmål)", "ar": 2014, "tagg": "historie", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b135", "tittel": "The Sworn Book of Honorius", "forfatter": "Honorius of Thebes", "pris": 300, "format": "Innbundet", "sprak": "Engelsk", "ar": 2016, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b136", "tittel": "Arabian Sands", "forfatter": "Wilfred Thesiger", "pris": 164, "format": "Pocket", "sprak": "Engelsk", "ar": 2007, "tagg": "annet", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b137", "tittel": "Conjure Codex", "forfatter": "", "pris": 395, "format": "Pocket", "sprak": "Engelsk", "ar": 2011, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b138", "tittel": "The Sixth and Seventh Books of Moses", "forfatter": "Joseph Peterson", "pris": 677, "format": "Innbundet", "sprak": "Engelsk", "ar": 2008, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b139", "tittel": "Laboratories of Faith", "forfatter": "John Warne Monroe", "pris": 596, "format": "Innbundet", "sprak": "Engelsk", "ar": 2007, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b140", "tittel": "Arbatel", "forfatter": "", "pris": 300, "format": "Innbundet", "sprak": "Engelsk", "ar": 2009, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}, {"id": "b141", "tittel": "Both Sides of Heaven", "forfatter": "Stephen Skinner, David Rankine, Aaron Leitch", "pris": 205, "format": "Pocket", "sprak": "Engelsk", "ar": 2009, "tagg": "okkult", "isbn": "", "forlag": "", "notat": "", "url": "", "status": "onsket", "lagtTil": "2026-05-21", "prisSjekket": "2026-05-21", "utgivelse": ""}]</script>
+<script>
+const TAGS=["okkult","historie","annet","fantasy/sf","musikk","tegneserier","språk"];
+const SHOPS={
+  skandinavisk:[["Norli","https://www.norli.no/search?q="],["Ark","https://www.ark.no/search?text="],
+    ["Akademika","https://www.akademika.no/sok?q="],["Haugenbok","https://www.haugenbok.no/sok?q="],
+    ["Bokkilden","https://www.bokkilden.no/SamboWeb/produkt.do?sok="]],
+  engelsk:[["Blackwell's","https://blackwells.co.uk/bookshop/search?keyword="],
+    ["Wordery","https://wordery.com/search?term="],["Amazon.co.uk","https://www.amazon.co.uk/s?k="],
+    ["Amazon.de","https://www.amazon.de/s?k="],["Amazon.com","https://www.amazon.com/s?k="]]
+};
+const WATKINS=["Watkins","https://www.watkinsbooks.com/search?q="];
+const SKANDI=["Norsk (bokmål)","Norsk (nynorsk)","Norsk","Dansk","Svensk"];
+
+let books=[], undoBuf=null, undoTimer=null;
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+/* ---------- lagring ---------- */
+let db=null;
+function openDB(){return new Promise(res=>{
+  if(!self.indexedDB) return res(null);
+  const r=indexedDB.open("onskeliste",1);
+  r.onupgradeneeded=()=>r.result.createObjectStore("books",{keyPath:"id"});
+  r.onsuccess=()=>res(r.result); r.onerror=()=>res(null);
+});}
+function readAll(){return new Promise(res=>{
+  if(!db) return res(null);
+  try{const rq=db.transaction("books").objectStore("books").getAll();
+    rq.onsuccess=()=>res(rq.result); rq.onerror=()=>res(null);}catch(e){res(null)}
+});}
+async function save(){
+  if(!db) return;
+  try{const tx=db.transaction("books","readwrite"), os=tx.objectStore("books");
+    os.clear(); books.forEach(b=>os.put(b));}catch(e){}
+}
+
+/* ---------- oppsett ---------- */
+async function boot(){
+  db=await openDB();
+  const stored=await readAll();
+  if(stored&&stored.length){books=stored;}
+  else{books=JSON.parse($("#seed").textContent); await save();}
+  if(navigator.storage&&navigator.storage.persist) navigator.storage.persist().catch(()=>{});
+  render();
+}
+
+/* ---------- hjelpere ---------- */
+const active=b=>b.status!=="kjopt";
+const initial=b=>(b.tittel||"?").trim()[0].toUpperCase();
+function coverStyle(b){
+  const p=["#191712","#1F5E52","#7A2F2F","#8A6A22","#2C4A63","#4A3C1E","#5B2F4A"];
+  let h=0; for(const c of b.tittel) h=(h*31+c.charCodeAt(0))&0xffff;
+  return "background:"+p[h%p.length];
+}
+function shopsFor(b){
+  const list=SKANDI.includes(b.sprak)?SHOPS.skandinavisk.slice():SHOPS.engelsk.slice();
+  if(b.tagg==="okkult") list.unshift(WATKINS);
+  return list;
+}
+function kommer(b){
+  if(!b.utgivelse) return null;
+  const d=new Date(b.utgivelse);
+  if(isNaN(d)||d<=new Date()) return null;
+  return d.toLocaleDateString("no",{day:"numeric",month:"short"});
+}
+
+/* ---------- listevisning ---------- */
+let filter="", query="", sort="ny", archOpen=false;
+
+function chipsHTML(){
+  const counts={}; books.filter(active).forEach(b=>counts[b.tagg]=(counts[b.tagg]||0)+1);
+  const all=books.filter(active).length;
+  let h=`<button class="chip" data-t="" aria-pressed="${filter===""}">Alle<b>${all}</b></button>`;
+  TAGS.forEach(t=>{ if(!counts[t]) return;
+    h+=`<button class="chip" data-t="${esc(t)}" aria-pressed="${filter===t}">${esc(t)}<b>${counts[t]}</b></button>`;});
+  return h;
+}
+function match(b){
+  if(filter&&b.tagg!==filter) return false;
+  if(!query) return true;
+  const q=query.toLowerCase();
+  return (b.tittel+" "+b.forfatter).toLowerCase().includes(q);
+}
+function sorted(arr){
+  const c=new Intl.Collator("no");
+  const f={ny:(a,b)=>b.id.slice(1)-a.id.slice(1), tittel:(a,b)=>c.compare(a.tittel,b.tittel),
+    forfatter:(a,b)=>c.compare(a.forfatter||"ÿ",b.forfatter||"ÿ"),
+    prisopp:(a,b)=>a.pris-b.pris, prisned:(a,b)=>b.pris-a.pris, ar:(a,b)=>b.ar-a.ar}[sort];
+  return arr.slice().sort(f);
+}
+function rowHTML(b){
+  const k=kommer(b);
+  return `<button class="row${active(b)?"":" done"}" data-id="${b.id}">
+    <span class="cover" style="${active(b)?coverStyle(b):""}">${b.cover?`<img src="${esc(b.cover)}" alt="" loading="lazy">`:(active(b)?esc(initial(b)):"")}</span>
+    <span class="meta">
+      <span class="title">${esc(b.tittel)}</span>
+      <span class="byline">${esc([b.forfatter,b.ar].filter(Boolean).join(" · "))}</span>
+      <span class="foot">
+        ${active(b)?`<span class="tag">${esc(b.tagg)}</span>`:""}
+        <span class="price">${b.pris?b.pris.toLocaleString("no")+" kr":""}${active(b)?"":" · kjøpt"}</span>
+        ${k?`<span class="soon">Kommer ${k}</span>`:""}
+      </span>
+    </span>
+    <span class="tick" data-tick="${b.id}" data-on="${active(b)?0:1}"></span>
+  </button>`;
+}
+function render(){
+  $("#chips").innerHTML=chipsHTML();
+  const live=sorted(books.filter(b=>active(b)&&match(b)));
+  const done=sorted(books.filter(b=>!active(b)&&match(b)));
+  $("#count").textContent=books.filter(active).length+" titler";
+  let h=live.map(rowHTML).join("");
+  if(!live.length) h=`<div class="empty"><p>Ingen treff her.</p><p>Prøv et annet filter, eller legg til boka.</p></div>`;
+  if(done.length){
+    h+=`<button class="archhead" id="arch" aria-expanded="${archOpen}"><span class="caret">›</span>Kjøpt<span style="color:var(--ink-3)">${done.length}</span></button>`;
+    if(archOpen) h+=done.map(rowHTML).join("");
+  }
+  $("#list").innerHTML=h;
+}
+
+/* ---------- handlinger ---------- */
+function toggleBought(id){
+  const b=books.find(x=>x.id===id); if(!b) return;
+  const was=b.status;
+  b.status=active(b)?"kjopt":"onsket";
+  save(); render();
+  snack(was==="kjopt"?"Flyttet tilbake til ønskelista":"Merket som kjøpt",()=>{
+    b.status=was; save(); render();
+  });
+}
+function snack(msg,undo){
+  clearTimeout(undoTimer);
+  $("#snackhost").innerHTML=`<div class="snack">${esc(msg)}<button id="undo">Angre</button></div>`;
+  $("#undo").onclick=()=>{undo(); $("#snackhost").innerHTML="";};
+  undoTimer=setTimeout(()=>$("#snackhost").innerHTML="",5000);
+}
+
+/* ---------- detalj / redigering ---------- */
+function openDetail(id){
+  const b=books.find(x=>x.id===id); if(!b) return;
+  const k=kommer(b), q=encodeURIComponent(b.isbn||(b.tittel+" "+(b.forfatter||"")));
+  const shops=shopsFor(b);
+  $("#sheet").innerHTML=`
+   <div class="sheettop">
+     <button id="back">‹ Tilbake</button><span class="grow"></span>
+     <button id="del" style="color:var(--ink-3)">Slett</button>
+   </div>
+   <div class="hero">
+     <button class="cover" id="coverbtn" style="${coverStyle(b)}" aria-label="Endre omslag">${b.cover?`<img src="${esc(b.cover)}" alt="">`:esc(initial(b))}</button>
+     <div>
+       <h2>${esc(b.tittel)}</h2>
+       <div class="byline">${esc(b.forfatter||"Forfatter ikke registrert")}</div>
+       <div class="foot"><span class="tag">${esc(b.tagg)}</span>
+         ${k?`<span class="soon">Kommer ${k}</span>`:""}</div>
+     </div>
+   </div>
+   ${b.status==="kjopt"?`<div class="banner ok">Kjøpt · ligger i arkivet</div>`:""}
+   <div class="coveract">
+     <button id="cfetch">Hent omslag</button>
+     <button id="cpick">Ta bilde</button>
+     ${b.cover?`<button id="cclear">Fjern</button>`:""}
+     <input id="cfile" type="file" accept="image/*" capture="environment" class="hide">
+   </div>
+   <div id="cmsg" style="padding:0 16px;font-size:13px;color:var(--ink-3)"></div>
+   <div class="fields">
+     <div class="field"><label for="f-tittel">Tittel</label><input id="f-tittel" value="${esc(b.tittel)}"></div>
+     <div class="field"><label for="f-forf">Forfatter</label><input id="f-forf" value="${esc(b.forfatter)}" placeholder="ikke registrert"></div>
+     <div class="field"><label for="f-pris">Pris (kr)</label><input id="f-pris" type="number" inputmode="numeric" value="${b.pris||""}"></div>
+     <div class="field"><label for="f-forlag">Forlag</label><input id="f-forlag" value="${esc(b.forlag)}" placeholder="ikke registrert"></div>
+     <div class="field"><label for="f-isbn">ISBN</label><input id="f-isbn" value="${esc(b.isbn)}" placeholder="mangler"></div>
+     <div class="field"><label for="f-format">Format</label><input id="f-format" value="${esc(b.format)}"></div>
+     <div class="field"><label for="f-sprak">Språk</label><input id="f-sprak" value="${esc(b.sprak)}"></div>
+     <div class="field"><label for="f-ar">År</label><input id="f-ar" type="number" inputmode="numeric" value="${b.ar||""}"></div>
+     <div class="field"><label for="f-utg">Utgivelse</label><input id="f-utg" type="date" value="${esc(b.utgivelse)}"></div>
+     <div class="field"><label for="f-url">Butikklenke</label><input id="f-url" value="${esc(b.url)}" placeholder="ingen"></div>
+     <div class="field" style="align-items:flex-start"><label for="f-notat">Notat</label><textarea id="f-notat" placeholder="Trykk for å skrive">${esc(b.notat)}</textarea></div>
+   </div>
+   <div class="seclabel">Emne</div>
+   <div class="tagpick" style="padding-left:16px;padding-right:16px" id="tagpick">
+     ${TAGS.map(t=>`<button data-tag="${esc(t)}" aria-pressed="${b.tagg===t}">${esc(t)}</button>`).join("")}
+   </div>
+   <div class="seclabel">Sjekk pris — sist sjekket ${esc(b.prisSjekket||"aldri")}</div>
+   <div class="shops">
+     ${shops.map(([n,u],i)=>`<a class="shop${i===0&&b.tagg==="okkult"?" lead":""}" target="_blank" rel="noopener" href="${u}${q}">${esc(n)}</a>`).join("")}
+   </div>
+   <div class="bar">
+     <button class="btn primary" id="mark">${b.status==="kjopt"?"Tilbake til ønskelista":"Marker som kjøpt"}</button>
+   </div>`;
+  $("#sheet").classList.remove("hide");
+  document.body.style.overflow="hidden";
+
+  const put=()=>{
+    b.tittel=$("#f-tittel").value.trim()||b.tittel;
+    b.forfatter=$("#f-forf").value.trim();
+    const p=parseInt($("#f-pris").value,10);
+    if(!isNaN(p)&&p!==b.pris){b.pris=p; b.prisSjekket=new Date().toISOString().slice(0,10);}
+    b.forlag=$("#f-forlag").value.trim(); b.isbn=$("#f-isbn").value.trim();
+    b.format=$("#f-format").value.trim(); b.sprak=$("#f-sprak").value.trim();
+    b.ar=parseInt($("#f-ar").value,10)||b.ar;
+    b.utgivelse=$("#f-utg").value; b.url=$("#f-url").value.trim(); b.notat=$("#f-notat").value;
+    save();
+  };
+  $("#sheet").querySelectorAll("input,textarea").forEach(el=>el.addEventListener("change",put));
+  $("#tagpick").onclick=e=>{const t=e.target.dataset.tag; if(!t) return;
+    b.tagg=t; save(); openDetail(id);};
+  const cmsg=t=>$("#cmsg").textContent=t;
+  const setCover=v=>{b.cover=v; save(); openDetail(id);};
+  $("#cfetch").onclick=async()=>{
+    cmsg("Søker…");
+    const res=await findCover(b);
+    if(res.feil){cmsg(res.feil); return;}
+    cmsg("Traff: "+res.via);
+    setCover(res.url);
+  };
+  const pick=()=>$("#cfile").click();
+  $("#cpick").onclick=pick;
+  if($("#coverbtn")) $("#coverbtn").onclick=pick;
+  $("#cfile").onchange=e=>{
+    const f=e.target.files[0]; if(!f) return;
+    shrink(f).then(setCover).catch(()=>cmsg("Kunne ikke lese bildet."));
+  };
+  if($("#cclear")) $("#cclear").onclick=()=>setCover("");
+  $("#back").onclick=()=>{put(); closeSheet(); render();};
+  $("#del").onclick=()=>{ if(!confirm("Slette «"+b.tittel+"» helt?")) return;
+    books=books.filter(x=>x.id!==id); save(); closeSheet(); render();};
+  $("#mark").onclick=()=>{put(); toggleBought(id); closeSheet();};
+}
+function closeSheet(){$("#sheet").classList.add("hide"); $("#sheet").innerHTML=""; document.body.style.overflow="";}
+
+/* ---------- ny bok ---------- */
+function openNew(prefill){
+  const p=prefill||{};
+  $("#sheet").innerHTML=`
+   <div class="sheettop"><button id="back">‹ Avbryt</button><span class="grow"></span></div>
+   ${p.url?`<div class="banner ok">Delt fra ${esc(new URL(p.url).hostname)}</div>`:""}
+   ${p.via?`<div class="banner ok">Hentet fra ${esc(p.via)}</div>`:""}
+   ${p.ingen?`<div class="banner warn">Fant ingen bok med ISBN ${esc(p.isbn)}. Fyll inn selv.</div>`:""}
+   <div class="fields">
+     <div class="field"><label for="n-tittel">Tittel</label><input id="n-tittel" value="${esc(p.tittel||"")}" placeholder="påkrevd"></div>
+     <div class="field"><label for="n-forf">Forfatter</label><input id="n-forf" value="${esc(p.forfatter||'')}" placeholder="valgfritt"></div>
+     <div class="field"><label for="n-pris">Pris (kr)</label><input id="n-pris" type="number" inputmode="numeric" value="${p.pris||''}" placeholder="valgfritt"></div>
+     <div class="field"><label for="n-isbn">ISBN</label><input id="n-isbn" value="${esc(p.isbn||"")}" placeholder="valgfritt"></div>
+     <div class="field"><label for="n-sprak">Språk</label>
+       <select id="n-sprak"><option${(p.sprak||"")==="Engelsk"?" selected":""}>Engelsk</option><option>Norsk (bokmål)</option><option>Norsk (nynorsk)</option>
+       <option>Dansk</option><option>Svensk</option></select></div>
+     <div class="field"><label for="n-ar">År</label><input id="n-ar" type="number" inputmode="numeric" value="${p.ar||''}" placeholder="valgfritt"></div>
+     <div class="field"><label for="n-url">Butikklenke</label><input id="n-url" value="${esc(p.url||"")}" placeholder="valgfritt"></div>
+   </div>
+   <div class="seclabel">Emne — velg én</div>
+   <div class="tagpick" style="padding-left:16px;padding-right:16px" id="newtag">
+     ${TAGS.map(t=>`<button data-tag="${esc(t)}" aria-pressed="false">${esc(t)}</button>`).join("")}
+   </div>
+   <div id="err" style="padding:0 16px;color:#B23A3A;font-size:13px"></div>
+   <div class="bar"><button class="btn primary" id="okbtn">Lagre</button></div>`;
+  $("#sheet").classList.remove("hide"); document.body.style.overflow="hidden";
+  let tag="";
+  $("#newtag").onclick=e=>{const t=e.target.dataset.tag; if(!t) return;
+    tag=t; $("#newtag").querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x.dataset.tag===t));
+    $("#err").textContent="";};
+  $("#back").onclick=()=>{closeSheet();};
+  $("#okbtn").onclick=()=>{
+    const tittel=$("#n-tittel").value.trim();
+    if(!tittel){$("#err").textContent="Skriv inn en tittel først."; return;}
+    if(!tag){$("#err").textContent="Velg et emne først."; return;}
+    const isbn=$("#n-isbn").value.trim();
+    const dupe=books.find(b=>(isbn&&b.isbn===isbn)||b.tittel.toLowerCase()===tittel.toLowerCase());
+    if(dupe&&!confirm("«"+dupe.tittel+"» ligger allerede i lista. Legge til likevel?")) return;
+    books.push({id:"b"+(Date.now()),tittel,forfatter:$("#n-forf").value.trim(),
+      pris:parseInt($("#n-pris").value,10)||0,format:p.format||"",sprak:$("#n-sprak").value,
+      ar:parseInt($("#n-ar").value,10)||new Date().getFullYear(),tagg:tag,isbn,forlag:"",notat:"",
+      url:$("#n-url").value.trim(),cover:p.cover||"",status:"onsket",lagtTil:new Date().toISOString().slice(0,10),
+      prisSjekket:new Date().toISOString().slice(0,10),utgivelse:""});
+    save(); closeSheet(); render();
+  };
+}
+
+/* ---------- strekkode ---------- */
+async function scan(){
+  if(!("BarcodeDetector" in window)){
+    alert("Denne nettleseren støtter ikke strekkodelesing. Legg til boka manuelt."); return;}
+  let stream;
+  try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});}
+  catch(e){alert("Fikk ikke tilgang til kameraet."); return;}
+  const v=document.createElement("video"); v.setAttribute("playsinline","");
+  v.style.cssText="position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:80;background:#000";
+  const x=document.createElement("button"); x.textContent="Lukk";
+  x.style.cssText="position:fixed;top:16px;right:16px;z-index:81;background:#000;color:#fff;padding:10px 16px;border-radius:8px";
+  document.body.append(v,x); v.srcObject=stream; await v.play();
+  const det=new BarcodeDetector({formats:["ean_13","ean_8","isbn"in window?"ean_13":"ean_13"]});
+  let stop=false;
+  const end=()=>{stop=true; stream.getTracks().forEach(t=>t.stop()); v.remove(); x.remove();};
+  x.onclick=end;
+  const loop=async()=>{ if(stop) return;
+    try{const codes=await det.detect(v);
+      if(codes.length){const raw=codes[0].rawValue; end(); slaOppISBN(raw); return;}}catch(e){}
+    requestAnimationFrame(loop);};
+  loop();
+}
+
+/* ---------- ISBN-oppslag ---------- */
+async function slaOppISBN(isbn){
+  const dupe=books.find(b=>b.isbn&&b.isbn===isbn);
+  if(dupe&&!confirm("«"+dupe.tittel+"» ligger allerede i lista. Legge til likevel?")) return;
+  let p={isbn};
+  try{
+    const r=await fetch("https://www.googleapis.com/books/v1/volumes?q=isbn:"+encodeURIComponent(isbn));
+    const j=r.ok?await r.json():null;
+    const v=j&&j.items&&j.items[0]&&j.items[0].volumeInfo;
+    if(v){
+      const spraak={en:"Engelsk",no:"Norsk (bokmål)",nb:"Norsk (bokmål)",nn:"Norsk (nynorsk)",
+        da:"Dansk",sv:"Svensk"}[v.language]||"";
+      p={isbn,tittel:v.title||"",forfatter:(v.authors||[]).join(", "),
+        ar:(v.publishedDate||"").slice(0,4),forlag:v.publisher||"",sprak:spraak,
+        cover:(v.imageLinks&&v.imageLinks.thumbnail||"").replace(/^http:/,"https:"),
+        via:"Google Books"};
+    } else p.ingen=true;
+  }catch(e){ p.ingen=true; }
+  openNew(p);
+}
+
+/* ---------- omslag ---------- */
+async function findCover(b){
+  if(b.isbn){
+    const ol="https://covers.openlibrary.org/b/isbn/"+encodeURIComponent(b.isbn)+"-M.jpg?default=false";
+    if(await imgOk(ol)) return {url:ol,via:"Open Library"};
+  }
+  const forf=(b.forfatter||"").split(",")[0].trim();
+  const forsok=[];
+  if(b.isbn) forsok.push("isbn:"+b.isbn);
+  if(forf) forsok.push('intitle:"'+b.tittel+'" inauthor:"'+forf+'"');
+  if(forf) forsok.push(b.tittel+" "+forf);
+  forsok.push('intitle:"'+b.tittel+'"');
+  forsok.push(b.tittel);
+  let nettfeil=false;
+  for(const q of forsok){
+    try{
+      const r=await fetch("https://www.googleapis.com/books/v1/volumes?maxResults=5&q="+encodeURIComponent(q));
+      if(!r.ok){ if(r.status===429) return {feil:"Google struper forespørslene. Vent litt og prøv igjen."};
+        nettfeil=true; continue; }
+      const j=await r.json();
+      for(const it of (j.items||[])){
+        const t=it.volumeInfo&&it.volumeInfo.imageLinks&&it.volumeInfo.imageLinks.thumbnail;
+        if(t) return {url:t.replace(/^http:/,"https:"),via:it.volumeInfo.title||"Google Books"};
+      }
+    }catch(e){ nettfeil=true; }
+  }
+  if(nettfeil) return {feil:"Får ikke kontakt med omslagstjenesten. Appen må kjøre fra en nettadresse, ikke fra en lokal fil."};
+  return {feil:"Ingen omslag funnet for denne tittelen."};
+}
+function imgOk(url){return new Promise(res=>{
+  const i=new Image(); i.onload=()=>res(i.naturalWidth>2); i.onerror=()=>res(false); i.src=url;
+});}
+function shrink(file){return new Promise((res,rej)=>{
+  const fr=new FileReader();
+  fr.onload=()=>{const im=new Image();
+    im.onload=()=>{const w=200,hh=Math.round(im.height*(w/im.width));
+      const c=document.createElement("canvas"); c.width=w; c.height=hh;
+      c.getContext("2d").drawImage(im,0,0,w,hh);
+      res(c.toDataURL("image/jpeg",.75));};
+    im.onerror=rej; im.src=fr.result;};
+  fr.onerror=rej; fr.readAsDataURL(file);
+});}
+
+/* ---------- sikkerhetskopi ---------- */
+function lastNed(){
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(books,null,1)],{type:"application/json"}));
+  a.download="onskeliste-"+new Date().toISOString().slice(0,10)+".json"; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+function backup(){
+  $("#sheet").innerHTML=`
+   <div class="sheettop"><button id="back">‹ Tilbake</button><span class="grow"></span></div>
+   <div class="seclabel">Sikkerhetskopi</div>
+   <div style="padding:0 16px 4px;font-size:14px;color:var(--ink-2)">
+     ${books.length} poster ligger på denne enheten. Tømmer du nettleserdata, forsvinner de.
+   </div>
+   <div class="coveract" style="padding:14px 16px">
+     <button id="ned">Last ned JSON</button>
+     <button id="opp">Les inn fil</button>
+     <input id="jfile" type="file" accept="application/json,.json" class="hide">
+   </div>
+   <div class="seclabel">Ved innlesing</div>
+   <div class="fields">
+     <div class="field"><label><input type="radio" name="mode" value="flett" checked style="width:auto"></label>
+       <span style="font-size:14px">Flett inn — legger til det som mangler, beholder alt du har</span></div>
+     <div class="field"><label><input type="radio" name="mode" value="erstatt" style="width:auto"></label>
+       <span style="font-size:14px">Erstatt alt — sletter dagens liste først</span></div>
+   </div>
+   <div id="jmsg" style="padding:14px 16px;font-size:13px;color:var(--ink-3)"></div>`;
+  $("#sheet").classList.remove("hide"); document.body.style.overflow="hidden";
+  $("#back").onclick=()=>{closeSheet(); render();};
+  $("#ned").onclick=lastNed;
+  $("#opp").onclick=()=>$("#jfile").click();
+  $("#jfile").onchange=e=>{
+    const f=e.target.files[0]; if(!f) return;
+    const fr=new FileReader();
+    fr.onload=()=>{
+      let inn;
+      try{inn=JSON.parse(fr.result);}catch(err){$("#jmsg").textContent="Fila er ikke gyldig JSON."; return;}
+      if(!Array.isArray(inn)||!inn.length||!inn[0].tittel){
+        $("#jmsg").textContent="Fant ingen bokliste i fila."; return;}
+      const mode=$("#sheet").querySelector('input[name=mode]:checked').value;
+      if(mode==="erstatt"){
+        if(!confirm("Sletter "+books.length+" poster og legger inn "+inn.length+". Sikker?")) return;
+        books=inn; save(); $("#jmsg").textContent="Erstattet med "+inn.length+" poster.";
+      }else{
+        const har=new Set(books.map(b=>b.id));
+        const nye=inn.filter(b=>!har.has(b.id));
+        books=books.concat(nye); save();
+        $("#jmsg").textContent="La til "+nye.length+" nye. "+(inn.length-nye.length)+" fantes fra før.";
+      }
+      render();
+    };
+    fr.onerror=()=>$("#jmsg").textContent="Kunne ikke lese fila.";
+    fr.readAsText(f);
+  };
+}
+
+/* ---------- hendelser ---------- */
+$("#chips").onclick=e=>{const c=e.target.closest(".chip"); if(!c) return; filter=c.dataset.t; render();};
+$("#q").oninput=e=>{query=e.target.value; render();};
+$("#sort").onchange=e=>{sort=e.target.value; render();};
+$("#add").onclick=()=>openNew();
+$("#scan").onclick=scan;
+$("#io").onclick=backup;
+$("#list").onclick=e=>{
+  const t=e.target.closest("[data-tick]");
+  if(t){e.stopPropagation(); toggleBought(t.dataset.tick); return;}
+  if(e.target.closest("#arch")){archOpen=!archOpen; render(); return;}
+  const r=e.target.closest(".row"); if(r) openDetail(r.dataset.id);
+};
+if("serviceWorker" in navigator) addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+const shared=new URLSearchParams(location.search);
+boot().then(()=>{
+  const u=shared.get("url")||shared.get("text");
+  if(u) openNew({url:u,tittel:shared.get("title")||""});
+});
+</script>
